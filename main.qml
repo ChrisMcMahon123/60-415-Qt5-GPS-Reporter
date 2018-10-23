@@ -8,7 +8,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
 
 //library name comes from main.cpp
-import gpslocation.backend 1.5
+import gpslocation.backend 1.9
 
 Window {
     id: window
@@ -18,7 +18,7 @@ Window {
     title: qsTr("GPS Location")
 
     function setConnectionLabelText() {
-        if(backEnd.connectionStringStatus() === -1) {
+        if(backEnd.connectionStringStatus === -1) {
             connectionLabel.text =
                 qsTr("Setup Instructions") + "\n- " +
                 qsTr("Go to the website") + "\n- " +
@@ -26,18 +26,18 @@ Window {
                 qsTr("Click add new device") + "\n- " +
                 qsTr("Enter the string that appears on this device")
         }
-        else if(backEnd.connectionStringStatus() === 0) {
+        else if(backEnd.connectionStringStatus === 0) {
             connectionLabel.text =
                 qsTr("Device Not Registered") + "\n" +
                 qsTr("Check the following:") + "\n- " +
                 qsTr("Internet Connection") + "\n- " +
                 qsTr("Server Status") + "\n- " +
-                qsTr("Connectiong String: ") + backEnd.connectionString()
+                qsTr("Connectiong String: ") + backEnd.connectionString
         }
-        else if(backEnd.connectionStringStatus() === 1) {
+        else if(backEnd.connectionStringStatus === 1) {
             connectionLabel.text =
                 qsTr("Device Registered") + "\n- " +
-                qsTr("Connection String: ") + backEnd.connectionString()
+                qsTr("Connection String: ") + backEnd.connectionString
         }
     }
 
@@ -48,11 +48,11 @@ Window {
         }
 
         onGpsLocationDataSent: {
-            if(backEnd.sendGpsDataStatus()) {
-                console.log("SUCCESSFULLY SENT LOCATION DATA")
+            if(backEnd.sendGpsDataStatus) {
+                console.log("\n[SUCCESS] Sent location data to server")
             }
             else {
-                console.log("FAILED TO SEND LOCATION DATA")
+                console.log("\n[FAILURE] Could not send location data to server")
             }
         }
     }
@@ -63,21 +63,20 @@ Window {
         onPreferredPositioningMethodsChanged: {
             //display current location or an error if not found
             if((position.coordinate + "") == "") {
-                console.log("Current Location: TIME = Unavailable | Coordinates = Unavailable")
                 currentLocationLabel.text = qsTr("Location Unavailable")
             }
             else {
-                console.log("Current Location: TIME = " + position.timestamp + " | Coordinates = " + position.coordinate)
-                currentLocationLabel.text = qsTr("Timestamp: ") + position.timestamp + "\n" + qsTr("Coordinates: ") + position.coordinate
+                currentLocationLabel.text = qsTr("Timestamp:\n") + position.timestamp + "\n" + qsTr("Coordinates:\n") + position.coordinate
 
-                backEnd.gpsLocation(position)
+                //send data to C++ where it will:
+                //a) send to the server if theres an internet connection
+                //b) be stored in a database and wait until theres an interent connection
+                //EPSG:4326 standard states that coordinate order should be latitude, longitude
+                backEnd.gpsLocation = position.coordinate.latitude + " " + position.coordinate.longitude + "|" + position.timestamp
             }
 
             setConnectionLabelText()
-            //send data to C++ where it will:
-            //a) send to the server if theres an internet connection
-            //b) be stored in a database and wait until theres an interent connection
-        }
+       }
     }
 
     ColumnLayout {
@@ -213,13 +212,11 @@ Window {
 
                             //will send the textbox string to C++ code
                             onAccepted: {
-                                console.log("Ok clicked: textField Value: " + textField.text)
-                                backEnd.connectionString(textField.text)
+                                backEnd.connectionString = textField.text
                                 textField.text = ""
                                 dialog.visible = false
                             }
                             onRejected: {
-                                console.log("Cancel clicked")
                                 textField.text = ""
                                 dialog.visible = false
                             }
