@@ -7,21 +7,33 @@
 #include <QSqlError>
 #include <QDebug>
 #include <QHash>
+#include <QJsonObject>
 
 class DatabaseHelper {
-    public:
-        DatabaseHelper();
+public:
+    //constructors
+    DatabaseHelper();
+    DatabaseHelper(bool flag);
 
-        void insertLocation(const QString &latitude, const QString &longitude, const QString &timestamp);
-        void insertServerKey(QString serverString, int stringStatus);
-        QHash<QString, QString> getServerKey();
+    //setters
+    void updateAccessCode(QString accessCode);
+    void updateAccessCodeStatus(bool codeStatus);
+    void updateCheckboxValue(int checkBoxValue);
+    void updateJsonWebToken(QString jsonWebToken);
+    void saveLocation(QString jsonString);
 
-    private:
-        void createDatabase(bool dropTablesFlag);
+    //getters
+    QHash<QString, QString> getSettings();
+    QVector<QString> getSavedLocations();
 
-        QSqlDatabase database;
-        QSqlQuery sqlQuery;
-        QString queryString;
+    //destroy
+    void clearSavedLocations();
+
+private:
+    void createDatabase(bool dropTablesFlag);
+
+    QSqlDatabase database;
+    QSqlQuery sqlQuery;
 };
 
 #endif // DATABASEHELPER_H

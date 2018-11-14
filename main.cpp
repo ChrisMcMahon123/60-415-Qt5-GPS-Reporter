@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
 
     QGuiApplication app(argc, argv);
 
-    qmlRegisterType<BackEnd>("gpslocation.backend", 1, 9, "BackEnd");
+    qmlRegisterType<BackEnd>("gpslocation.backend", 2, 1, "BackEnd");
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
